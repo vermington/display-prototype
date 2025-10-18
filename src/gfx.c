@@ -1,5 +1,6 @@
 // src/gfx.c
 #include "gfx.h"
+#include <stddef.h>
 #include <string.h>
 
 // 5x7 ASCII font (32..126); columns are vertical, LSB = top pixel
@@ -68,4 +69,56 @@ void gfx_draw_text(ssd1306_t *dev, int x, int y, const char *s) {
         gfx_draw_char(dev, cx, y, *s++);
         cx += 6;
     }
+}
+
+int gfx_text_rows(const ssd1306_t *dev) {
+    if (!dev) return 0;
+    return dev->height / 8; // one text row per page (8px)
+}
+
+int gfx_text_width(const char *s) {
+    if (!s) return 0;
+    size_t n = strlen(s);
+    // If you ever add proportional fonts, compute width per glyph here.
+    return (int)(n * GFX_CHAR_ADVANCE);
+}
+
+int gfx_clear_line(ssd1306_t *dev, int row) {
+    if (!dev || !dev->buffer) return -1;
+    int rows = gfx_text_rows(dev);
+    if (row < 0 || row >= rows) return -2;
+    // Each "row" == 1 page (8px high). Clear one page worth of bytes.
+    memset(&dev->buffer[(size_t)row * dev->width], 0x00, (size_t)dev->width);
+    return 0;
+}
+
+int gfx_print_line(ssd1306_t *dev, const char *text, int row, int alignment_or_x) {
+    if (!dev || !dev->buffer || !text) return -1;
+    int rows = gfx_text_rows(dev);
+    if (row < 0 || row >= rows) return -2;
+
+    // Compute y as top pixel of the text row. (Row height = 8 px; font is 7 px tall.)
+    int y = row * 8;
+
+    // Compute x from alignment keyword or explicit x
+    int text_px = gfx_text_width(text);
+    int x;
+    if (alignment_or_x == GFX_ALIGN_LEFT) {
+        x = 0;
+    } else if (alignment_or_x == GFX_ALIGN_CENTER || alignment_or_x == GFX_ALIGN_CENTRE) {
+        x = (dev->width - text_px) / 2;
+    } else if (alignment_or_x == GFX_ALIGN_RIGHT) {
+        x = dev->width - text_px;
+    } else {
+        // Treat any non-negative value as explicit x position
+        x = alignment_or_x;
+    }
+
+    // Clamp x into a safe drawable range
+    if (x < 0) x = 0;
+    if (x > (int)dev->width - 1) x = (int)dev->width - 1;
+
+    // Draw (existing draw routines already clip to framebuffer bounds)
+    gfx_draw_text(dev, x, y, text);
+    return 0;
 }
