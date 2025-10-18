@@ -45,6 +45,12 @@ void gfx_draw_char(ssd1306_t *dev, int x, int y, char c);
 /** Draw a null-terminated string starting at (x,y). 6 px advance per char. */
 void gfx_draw_text(ssd1306_t *dev, int x, int y, const char *s);
 
+// Draw a filled axis-aligned rectangle; 'on' = 1 sets pixels, 0 clears pixels.
+void gfx_fill_rect(ssd1306_t *dev, int x, int y, int w, int h, int on);
+
+// Draw just the rectangle outline.
+void gfx_draw_rect(ssd1306_t *dev, int x, int y, int w, int h, int on);
+
 #ifdef __cplusplus
 }
 #endif

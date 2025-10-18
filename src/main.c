@@ -1,12 +1,11 @@
 // src/main.c
 #include "port.h"
 #include "ssd1306.h"
-#include "app_render_hello.h"
+#include "app_calc.h"
 
 int main(void) {
-    // Centralized platform/display configuration
     const port_display_cfg_t cfg = {
-        .i2c_addr = 0x3C,  // change to 0x3D if your module uses it
+        .i2c_addr = 0x3C,  // change to 0x3D if your panel uses it
         .width    = 128,
         .height   = 64
     };
@@ -19,10 +18,8 @@ int main(void) {
         return 2;
     }
 
-    // Call the app/layer you want to render
-    app_render_hello(&dev);
-
-    port_delay_ms(5000);
+    // Run the calculator app (console-driven for now)
+    app_run_calc(&dev);
 
     ssd1306_deinit(&dev);
     port_shutdown();

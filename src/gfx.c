@@ -122,3 +122,24 @@ int gfx_print_line(ssd1306_t *dev, const char *text, int row, int alignment_or_x
     gfx_draw_text(dev, x, y, text);
     return 0;
 }
+
+void gfx_fill_rect(ssd1306_t *dev, int x, int y, int w, int h, int on) {
+    if (!dev || !dev->buffer || w <= 0 || h <= 0) return;
+    for (int yy = 0; yy < h; ++yy) {
+        for (int xx = 0; xx < w; ++xx) {
+            gfx_set_pixel(dev, x + xx, y + yy, on);
+        }
+    }
+}
+
+void gfx_draw_rect(ssd1306_t *dev, int x, int y, int w, int h, int on) {
+    if (!dev || !dev->buffer || w <= 0 || h <= 0) return;
+    for (int xx = 0; xx < w; ++xx) {
+        gfx_set_pixel(dev, x + xx, y, on);
+        gfx_set_pixel(dev, x + xx, y + h - 1, on);
+    }
+    for (int yy = 0; yy < h; ++yy) {
+        gfx_set_pixel(dev, x, y + yy, on);
+        gfx_set_pixel(dev, x + w - 1, y + yy, on);
+    }
+}
